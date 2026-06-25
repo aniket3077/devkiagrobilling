@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "656235441298",
+    "project_id": "com-example-devkiagrobil-761e8",
+    "storage_bucket": "com-example-devkiagrobil-761e8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:656235441298:android:2df1d4caa32cb2d60d4a4b",
+        "android_client_info": {
+          "package_name": "com.example.devkiagrobilling"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABhKAFny-6ta3yUUoWLHfscFbsu6JS2OE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

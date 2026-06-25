@@ -1,0 +1,26 @@
+import 'package:equatable/equatable.dart';
+import '../../../domain/entities/customer.dart';
+
+abstract class CustomerState extends Equatable {
+  const CustomerState();
+  @override
+  List<Object?> get props => [];
+}
+
+class CustomerInitial extends CustomerState {}
+
+class CustomerLoading extends CustomerState {}
+
+class CustomersLoaded extends CustomerState {
+  final List<Customer> customers;
+  const CustomersLoaded(this.customers);
+  @override
+  List<Object?> get props => [customers];
+}
+
+class CustomerError extends CustomerState {
+  final String message;
+  const CustomerError(this.message);
+}
+
+class CustomerOperationSuccess extends CustomerState {}

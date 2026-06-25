@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- HELPER FUNCTIONS ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getRole() {
+      return getUserData().role;
+    }
+
+    function getTenantId() {
+      return getUserData().tenantId;
+    }
+
+    function getBranchId() {
+      return getUserData().branchId;
+    }
+
+    function isOwner() {
+      return isSignedIn() && getRole() == 'owner';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getRole() == 'admin';
+    }
+
+    function isManager() {
+      return isSignedIn() && getRole() == 'manager';
+    }
+
+    function isCashier() {
+      return isSignedIn() && getRole() == 'cashier';
+    }
+
+    function belongsToTenant(tenantId) {
+      return isSignedIn() && getTenantId() == tenantId;
+    }
+
+    function belongsToBranch(branchId) {
+      return belongsToTenant(getUserData().tenantId) && (getBranchId() == branchId || isOwner());
+    }
+
+    // --- RULES ---
+
+    // Tenants: Only Owners can manage their organization data.
+    match /tenants/{tenantId} {
+      allow read: if belongsToTenant(tenantId);
+      allow write: if belongsToTenant(tenantId) && isOwner();
+    }
+
+    // Branches: Managers and Owners can manage branch details.
+    match /branches/{branchId} {
+      allow read: if belongsToTenant(resource.data.tenantId);
+      allow write: if belongsToTenant(request.resource.data.tenantId) && (isOwner() || isAdmin());
+    }
+
+    // Users: Admin/Owner can manage users. Users can read their own profile.
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || getTenantId() == resource.data.tenantId);
+      allow create: if isSignedIn(); // Allow initial creation during signup
+      allow update, delete: if belongsToTenant(resource.data.tenantId) && (isOwner() || isAdmin());
+    }
+
+    // Products: Global catalog for the tenant.
+    match /products/{productId} {
+      allow read: if belongsToTenant(resource.data.tenantId);
+      allow write: if belongsToTenant(request.resource.data.tenantId) && (isOwner() || isAdmin() || isManager());
+    }
+
+    // Branch Inventory: Branch-specific stock.
+    match /branch_inventory/{inventoryId} {
+      allow read: if belongsToTenant(resource.data.tenantId);
+      allow write: if belongsToBranch(request.resource.data.branchId) && (isOwner() || isAdmin() || isManager());
+    }
+
+    // Invoices: Critical sales data.
+    match /invoices/{invoiceId} {
+      allow read: if belongsToTenant(resource.data.tenantId);
+      // Cashiers can create, but only Managers/Admins can update or delete.
+      allow create: if belongsToBranch(request.resource.data.branchId);
+      allow update, delete: if belongsToBranch(resource.data.branchId) && (isOwner() || isAdmin() || isManager());
+    }
+
+    // Inventory Transactions: Audit trail.
+    match /inventory_transactions/{txId} {
+      allow read: if belongsToTenant(resource.data.tenantId);
+      allow create: if belongsToBranch(request.resource.data.branchId);
+      allow update, delete: if false; // Audit logs should never be modified or deleted.
+    }
+
+    // Customers: Shared across tenant branches.
+    match /customers/{customerId} {
+      allow read: if belongsToTenant(resource.data.tenantId);
+      allow write: if belongsToTenant(request.resource.data.tenantId);
+    }
+
+    // Expenses: Branch isolated.
+    match /expenses/{expenseId} {
+      allow read: if belongsToBranch(resource.data.branchId);
+      allow create: if belongsToBranch(request.resource.data.branchId);
+      allow update, delete: if belongsToBranch(resource.data.branchId) && (isOwner() || isAdmin() || isManager());
+    }
+
+    // Attendance: Managed by Managers/Admins.
+    match /attendance/{attendanceId} {
+      allow read: if belongsToBranch(resource.data.branchId);
+      allow write: if belongsToBranch(request.resource.data.branchId) && (isOwner() || isAdmin() || isManager());
+    }
+
+    // Salaries: Highly sensitive.
+    match /salaries/{salaryId} {
+      allow read: if belongsToTenant(resource.data.tenantId) && (isOwner() || isAdmin() || request.auth.uid == resource.data.employeeId);
+      allow write: if belongsToTenant(request.resource.data.tenantId) && (isOwner() || isAdmin());
+    }
+  }
+}

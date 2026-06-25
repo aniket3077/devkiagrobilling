@@ -1,0 +1,40 @@
+name: devkiagrobilling
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.0.0
+  firebase_auth: ^5.0.0
+  google_sign_in: ^6.2.1
+  cloud_firestore: ^5.0.0
+  flutter_bloc: ^8.1.5
+  equatable: ^2.0.5
+  get_it: ^7.6.7
+  fpdart: ^0.6.0
+  fl_chart: ^0.66.0
+  intl: ^0.19.0
+  firebase_storage: ^12.0.0
+  image_picker: ^1.1.2
+  mobile_scanner: ^5.1.1
+  uuid: ^4.4.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  connectivity_plus: ^6.0.3
+  firebase_messaging: ^15.0.0
+  flutter_local_notifications: ^17.1.2
+  blue_thermal_printer: ^1.2.3
+  esc_pos_utils_plus: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
