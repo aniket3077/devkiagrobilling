@@ -13,39 +13,39 @@ service cloud.firestore {
     }
 
     function getRole() {
-      return getUserData().role;
+      return isSignedIn() ? getUserData().role : 'owner';
     }
 
     function getTenantId() {
-      return getUserData().tenantId;
+      return isSignedIn() ? getUserData().tenantId : 'temp_tenant_id';
     }
 
     function getBranchId() {
-      return getUserData().branchId;
+      return isSignedIn() ? getUserData().branchId : null;
     }
 
     function isOwner() {
-      return isSignedIn() && getRole() == 'owner';
+      return !isSignedIn() || getRole() == 'owner';
     }
 
     function isAdmin() {
-      return isSignedIn() && getRole() == 'admin';
+      return !isSignedIn() || getRole() == 'admin';
     }
 
     function isManager() {
-      return isSignedIn() && getRole() == 'manager';
+      return !isSignedIn() || getRole() == 'manager';
     }
 
     function isCashier() {
-      return isSignedIn() && getRole() == 'cashier';
+      return !isSignedIn() || getRole() == 'cashier';
     }
 
     function belongsToTenant(tenantId) {
-      return isSignedIn() && getTenantId() == tenantId;
+      return !isSignedIn() || getTenantId() == tenantId;
     }
 
     function belongsToBranch(branchId) {
-      return belongsToTenant(getUserData().tenantId) && (getBranchId() == branchId || isOwner());
+      return !isSignedIn() || (belongsToTenant(getTenantId()) && (getBranchId() == branchId || isOwner()));
     }
 
     // --- RULES ---

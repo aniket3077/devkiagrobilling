@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'injection_container.dart' as di;
 import 'shared/theme/app_theme.dart';
@@ -20,6 +21,16 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await di.init();
+  
+  // Auto sign-in anonymously for testing/development if not logged in
+  if (FirebaseAuth.instance.currentUser == null) {
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+      print("Signed in anonymously as: ${FirebaseAuth.instance.currentUser?.uid}");
+    } catch (e) {
+      print("Anonymous sign-in failed: $e");
+    }
+  }
   
   runApp(const MyApp());
 }
